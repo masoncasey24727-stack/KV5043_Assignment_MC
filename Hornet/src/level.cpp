@@ -1,10 +1,20 @@
 #include "level.h"
 #include <fstream>
 #include <string>
+#include <vector>
+#include <sstream>
 
-bool Level::ParseConfigFile(const std::string& fileName)
+
+
+Level::Level(int levelNumber, const std::string& fileName)
+	: m_levelNumber(levelNumber)
+	, m_fileName(fileName)
 {
-	std::ifstream configFile(fileName);
+}
+
+bool Level::ParseConfigFile()
+{
+	std::ifstream configFile(m_fileName);
 
 
 	if (!configFile.is_open()) {
@@ -15,11 +25,47 @@ bool Level::ParseConfigFile(const std::string& fileName)
 		std::string line;
 		while (std::getline(configFile, line))
 		{
-			if (line.empty())
+			if (line.empty()) //check if line is empty
 			{
 				continue;
 			}
+			std::vector<std::string> tokens = split(line, ','); //splits lines into tokens
+			if (tokens.empty())
+			{
+				continue;
+			}
+			
+			const std::string& type = tokens[0];  // gets first token of line to determine what type it is
+
+			if (type == "BACKGROUND" || type == "TILELAYER")
+			{
+				ParseLayer(line);
+			}
+			else
+			{
+				ParseGameObject(line);
+			}
 		}
 
+
+
+		return true;
 	}
+
+	
+}
+
+//splits the line/string up into tokens based on where ','s are
+std::vector<std::string> split(const std::string& string, char delimiter)
+{
+	std::vector<std::string> tokens;
+	std::stringstream stream(string);
+	std::string token;
+
+	while (std::getline(stream, token, delimiter))
+	{
+		tokens.push_back(token);
+	}
+
+	return tokens;
 }
