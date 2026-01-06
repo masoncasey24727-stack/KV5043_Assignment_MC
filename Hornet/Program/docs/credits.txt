@@ -4,8 +4,7 @@ Licence details, links and further information are available in the docs folder.
 
 Game program written by Martin Wonders
 
-Configuration system written by *** Put Your Name Here ***
-a dopey idiot who is too lazy to update the credits page.
+Configuration system written by Mason Casey
 
 Images, fonts, sounds and music have been taken from the following sources.
 

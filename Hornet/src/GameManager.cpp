@@ -43,7 +43,7 @@ void GameManager::EndGame()
 	//delete the level memory
 	delete m_currentLevel;
 }
-
+//LoadLevel loads the level
 bool GameManager::LoadLevel(int levelNumber, const std::string& fileName)
 {
 	m_currentLevel = new Level(levelNumber, fileName);

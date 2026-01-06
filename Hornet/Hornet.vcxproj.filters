@@ -117,9 +117,6 @@
     <ClCompile Include="GameObjects\Explosion.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="src\Level.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Engine\ErrorLogger.h">
@@ -230,7 +227,7 @@
     <ClInclude Include="src\Level.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="src\Level.h">
+    <ClInclude Include="src\level.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
