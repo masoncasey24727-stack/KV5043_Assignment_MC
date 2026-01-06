@@ -6,8 +6,24 @@
 #include "../Layers/TileLayer.h"
 #include "../GameObjects/BoundaryObject.h"
 #include "../Engine/ObjectManager.h" 
+#include "../GameObjects/Pickup.h"
+#include "../GameObjects/FuelPump.h"
+#include "../Engine/HtGraphics.h"
 
 
+bool Level::StringToBool(const std::string& theString)
+{
+	if (theString == "TRUE" || theString == "true" || theString == "1")
+	{
+		return true;
+	}
+	return false;
+}
+
+bool Level::LoadLevel()
+{
+	return true;
+}
 
 Level::Level(int levelNumber, const std::string& fileName)
 	: m_levelNumber(levelNumber)
@@ -62,7 +78,7 @@ bool Level::ParseConfigFile()
 
 
 //splits the line/string up into tokens based on where ','s are
-std::vector<std::string> split(const std::string& string, char delimiter)
+std::vector<std::string> Level::split(const std::string& string, char delimiter)
 {
 	std::vector<std::string> tokens;
 	std::stringstream stream(string);
@@ -104,15 +120,27 @@ void Level::ParseGameObject(const std::string& line)
 		return;
 	}
 
-	if (type == "BACKGROUND" || type == "PICKUP" || type == "FUEL_PUMP")
+	if (type == "BACKGROUND")
 	{
-		
+		ParseBackground(tokens);
+		return;
+	}
+
+	if (type == "PICKUP")
+	{
+		ParsePickup(tokens);
+		return;
+	}
+
+	if (type == "FUEL_PUMP")
+	{
+		ParseFuelPump(tokens);
 		return;
 	}
 
 	if (type == "BOUNDARY" || type == "BOUNDARY_FINISH")
 	{
-		
+		ParseBoundary(tokens);
 		return;
 	}
 }
@@ -153,6 +181,102 @@ void Level::ParseBoundary(const std::vector<std::string>& tokens)
 	}
 	catch (const std::exception&)
 	{
+		return;
+	}
+}
+
+//Background
+
+void Level::ParseBackground(const std::vector<std::string>& tokens)
+{
+	// BACKGROUND line uses: ... SCALE, IMAGE, ANGLE, IS_FLIPPED_H, IS_FLIPPED_V ...
+	constexpr size_t kMinTokens = 7;
+	if (tokens.size() < kMinTokens)
+	{
+		return;
+	}
+
+	const std::string& imagePath = tokens[6];
+
+	PictureIndex picture = HtGraphics::instance.LoadPicture(imagePath);
+	if (picture != NO_PICTURE_INDEX)
+	{
+		HtGraphics::instance.SetBackgroundTexture(picture);
+	}
+}
+
+//Pickup
+void Level::ParsePickup(const std::vector<std::string>& tokens)
+{
+	constexpr size_t kMinTokens = 12; 
+	{
+		return;
+	}
+
+	try
+	{
+		const double x = std::stod(tokens[1]);
+		const double y = std::stod(tokens[2]);
+		const double scale = std::stod(tokens[5]);
+
+		const std::string& image = tokens[6];
+		const double angle = std::stod(tokens[7]);
+
+		const int value = std::stoi(tokens[11]);
+
+		PickUp* pickup = new PickUp(ObjectType::PICK_UP);
+		pickup->Initialise(image.c_str(), Vector2D(x, y), angle, scale);
+		pickup->SetValue(value);
+
+		ObjectManager::instance.AddItem(pickup);
+	}
+	catch (const std::exception&)
+	{
+		return; 
+	}
+}
+
+//FuelPump
+
+void Level::ParseFuelPump(const std::vector<std::string>& tokens)
+{
+	// Need up to ANIM_SPEED
+	constexpr size_t kMinTokens = 15;
+	if (tokens.size() < kMinTokens)
+	{
+		return;
+	}
+
+	try
+	{
+		const double x = std::stod(tokens[1]);
+		const double y = std::stod(tokens[2]);
+		const double scale = std::stod(tokens[5]);
+
+		const std::string& image = tokens[6];
+		const double angle = std::stod(tokens[7]);
+
+		const int fuelValue = std::stoi(tokens[11]);
+
+		const bool isAnimated = StringToBool(tokens[12]);
+		const int frameCount = std::stoi(tokens[13]);
+		const double animSpeed = std::stod(tokens[14]);
+
+		FuelPump* fuelPump = new FuelPump(ObjectType::FUEL_PUMP);
+		fuelPump->Initialise(image.c_str(), Vector2D(x, y), angle, scale);
+		fuelPump->SetFuelValue(fuelValue);
+
+		if (isAnimated)
+		{
+			fuelPump->SetFrameCount(frameCount);
+			fuelPump->SetAnimationSpeed(animSpeed);
+		}
+
+		ObjectManager::instance.AddItem(fuelPump);
+	}
+	catch (const std::exception&)
+	{
+		// Designer-proofing (Criteria 4)
 		return;
 	}
 }

@@ -1,5 +1,6 @@
 #pragma once
 #include "../Layers/Layer.h"
+#include <vector>
 
 class Level
 {
@@ -14,6 +15,10 @@ private:
 	void ParseGameObject(const std::string& line);
 
 	void ParseBoundary(const std::vector<std::string>& tokens);
+	void ParseBackground(const std::vector<std::string>& tokens);
+	void ParsePickup(const std::vector<std::string>& tokens);
+	void ParseFuelPump(const std::vector<std::string>& tokens);
+	bool StringToBool(const std::string& theString);
 
 private:
 	std::string m_fileName;
