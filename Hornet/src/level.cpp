@@ -8,7 +8,12 @@
 #include "../Engine/ObjectManager.h" 
 #include "../GameObjects/Pickup.h"
 #include "../GameObjects/FuelPump.h"
+#include "../GameObjects/Enemy.h"
+#include "../GameObjects/Player.h"
 #include "../Engine/HtGraphics.h"
+#include "../src/GameManager.h"
+
+
 
 
 bool Level::StringToBool(const std::string& theString)
@@ -22,6 +27,7 @@ bool Level::StringToBool(const std::string& theString)
 
 bool Level::LoadLevel()
 {
+	return ParseConfigFile();
 	return true;
 }
 
@@ -149,7 +155,7 @@ void Level::ParseGameObject(const std::string& line)
 //boundary
 void Level::ParseBoundary(const std::vector<std::string>& tokens)
 {
-	// OBJECT_TYPE, X_POSITION, Y_POSITION, WIDTH, HEIGHT, SCALE
+	
 	constexpr size_t kMinTokens = 6;
 	if (tokens.size() < kMinTokens)
 	{
@@ -189,7 +195,7 @@ void Level::ParseBoundary(const std::vector<std::string>& tokens)
 
 void Level::ParseBackground(const std::vector<std::string>& tokens)
 {
-	// BACKGROUND line uses: ... SCALE, IMAGE, ANGLE, IS_FLIPPED_H, IS_FLIPPED_V ...
+	
 	constexpr size_t kMinTokens = 7;
 	if (tokens.size() < kMinTokens)
 	{
@@ -276,7 +282,130 @@ void Level::ParseFuelPump(const std::vector<std::string>& tokens)
 	}
 	catch (const std::exception&)
 	{
-		// Designer-proofing (Criteria 4)
+		
+		return;
+	}
+}
+
+//Enemy
+
+void Level::ParseEnemy(const std::vector<std::string>& tokens)
+{
+
+	constexpr size_t kMinTokens = 20;
+	if (tokens.size() < kMinTokens)
+	{
+		return;
+	}
+
+	try
+	{
+		const double x = std::stod(tokens[1]);
+		const double y = std::stod(tokens[2]);
+		const double scale = std::stod(tokens[5]);
+
+		const std::string& image = tokens[6];
+		const double angle = std::stod(tokens[7]);
+
+		const bool flipH = StringToBool(tokens[8]);
+		const bool flipV = StringToBool(tokens[9]);
+
+		(void)std::stoi(tokens[10]);
+
+		const int scoreValue = std::stoi(tokens[11]);
+
+		const double projectileScale = std::stod(tokens[12]);
+		const double projectileBearing = std::stod(tokens[13]);
+		const double projectileOffsetX = std::stod(tokens[14]);
+		const double projectileOffsetY = std::stod(tokens[15]);
+
+		const std::string& projectileImage = tokens[16];
+
+		const double projectileLifeTime = std::stod(tokens[17]);
+		const double projectileDelay = std::stod(tokens[18]);
+		const double projectileSpeed = std::stod(tokens[19]);
+
+		Enemy* enemy = new Enemy(ObjectType::ENEMY);
+		enemy->Initialise(image.c_str(), Vector2D(x, y), angle, scale);
+		enemy->FlipHorizontal(flipH);
+		enemy->FlipVertical(flipV);
+		enemy->SetScoreValue(scoreValue);
+
+		enemy->LoadProjectiles(
+			projectileLifeTime,
+			Vector2D(projectileOffsetX, projectileOffsetY),
+			projectileBearing,
+			projectileDelay,
+			projectileImage,
+			projectileScale,
+			projectileSpeed
+		);
+
+		ObjectManager::instance.AddItem(enemy);
+	}
+	catch (const std::exception&)
+	{
+		
+		return;
+	}
+}
+
+void Level::ParsePlayer(const std::vector<std::string>& tokens)
+{
+
+	constexpr size_t kMinTokens = 20;
+	if (tokens.size() < kMinTokens)
+	{
+		return;
+	}
+
+	try
+	{
+		const double x = std::stod(tokens[1]);
+		const double y = std::stod(tokens[2]);
+		const double scale = std::stod(tokens[5]);
+
+		const std::string& image = tokens[6];
+		const double angle = std::stod(tokens[7]);
+
+		
+		(void)StringToBool(tokens[8]);
+		(void)StringToBool(tokens[9]);
+		(void)std::stoi(tokens[10]);
+		(void)std::stoi(tokens[11]);
+
+		const double projectileScale = std::stod(tokens[12]);
+
+		
+		(void)std::stod(tokens[13]);
+
+		const double projectileOffsetX = std::stod(tokens[14]);
+		const double projectileOffsetY = std::stod(tokens[15]);
+
+		const std::string& projectileImage = tokens[16];
+
+		const double projectileLifeTime = std::stod(tokens[17]);
+		const double projectileDelay = std::stod(tokens[18]);
+		const double projectileSpeed = std::stod(tokens[19]);
+
+		Player* player = new Player(ObjectType::PLAYER);
+		player->Initialise(image.c_str(), Vector2D(x, y), angle, scale);
+
+		player->LoadProjectiles(
+			projectileLifeTime,
+			Vector2D(projectileOffsetX, projectileOffsetY),
+			projectileDelay,
+			projectileImage,
+			projectileScale,
+			projectileSpeed
+		);
+
+		ObjectManager::instance.AddItem(player);
+
+	
+	}
+	catch (const std::exception&)
+	{
 		return;
 	}
 }

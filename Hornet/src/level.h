@@ -19,6 +19,8 @@ private:
 	void ParsePickup(const std::vector<std::string>& tokens);
 	void ParseFuelPump(const std::vector<std::string>& tokens);
 	bool StringToBool(const std::string& theString);
+	void ParseEnemy(const std::vector<std::string>& tokens);
+	void ParsePlayer(const std::vector<std::string>& tokens);
 
 private:
 	std::string m_fileName;
