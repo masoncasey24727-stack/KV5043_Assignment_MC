@@ -116,13 +116,13 @@ void Level::ParseGameObject(const std::string& line)
 
 	if (type == "PLAYER")
 	{
-		//ParsePlayer(tokens);
+		ParsePlayer(tokens);
 		return;
 	}
 
 	if (type == "ENEMY")
 	{
-		
+		ParseEnemy(tokens);
 		return;
 	}
 
@@ -215,6 +215,7 @@ void Level::ParseBackground(const std::vector<std::string>& tokens)
 void Level::ParsePickup(const std::vector<std::string>& tokens)
 {
 	constexpr size_t kMinTokens = 12; 
+	if (tokens.size() < kMinTokens)
 	{
 		return;
 	}
