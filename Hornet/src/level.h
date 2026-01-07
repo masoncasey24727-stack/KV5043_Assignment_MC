@@ -14,6 +14,9 @@ private:
 	std::vector<std::string> split(const std::string& string, char delimiter);
 	void ParseGameObject(const std::string& line);
 
+	Layer* ParseLayer(const std::string& line);
+	Layer* ParseTileLayer(const std::vector<std::string>& tokens);
+
 	void ParseBoundary(const std::vector<std::string>& tokens);
 	void ParseBackground(const std::vector<std::string>& tokens);
 	void ParsePickup(const std::vector<std::string>& tokens);

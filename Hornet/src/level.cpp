@@ -6,12 +6,14 @@
 #include "../Layers/TileLayer.h"
 #include "../GameObjects/BoundaryObject.h"
 #include "../Engine/ObjectManager.h" 
-#include "../GameObjects/Pickup.h"
+#include "../GameObjects/PickUp.h"
 #include "../GameObjects/FuelPump.h"
 #include "../GameObjects/Enemy.h"
 #include "../GameObjects/Player.h"
 #include "../Engine/HtGraphics.h"
 #include "../src/GameManager.h"
+#include "../Engine/Result.h"
+#include "Background.h"
 
 
 
@@ -28,7 +30,6 @@ bool Level::StringToBool(const std::string& theString)
 bool Level::LoadLevel()
 {
 	return ParseConfigFile();
-	return true;
 }
 
 Level::Level(int levelNumber, const std::string& fileName)
@@ -70,7 +71,7 @@ bool Level::ParseConfigFile()
 
 			if (type == "TILE")   //seperates based on layers and gameobjects
 			{
-				//ParseLayer(line);
+				ParseLayer(line);
 			}
 			else
 			{
@@ -96,6 +97,98 @@ std::vector<std::string> Level::split(const std::string& string, char delimiter)
 	}
 
 	return tokens;
+}
+
+//parseLayer
+Layer* Level::ParseLayer(const std::string& line)
+{
+	std::vector<std::string> tokens = split(line, ',');
+	if (tokens.empty())
+	{
+		return nullptr;
+	}
+	
+
+	if (tokens[0] == "LAYER_TYPE") //skips header row
+	{
+		return nullptr;
+	}
+
+	if (tokens[0] == "TILE")
+	{
+		Layer* layer = ParseTileLayer(tokens);
+		return layer;
+	}
+
+	return nullptr;
+}
+
+
+
+Layer* Level::ParseTileLayer(const std::vector<std::string>& tokens)
+{
+
+	constexpr size_t kMinTokens = 13;
+	if (tokens.size() < kMinTokens)
+	{
+		return nullptr;
+	}
+
+	
+	if (tokens[0] == "LAYER_TYPE") //extra defence against header just in case
+	{
+		return nullptr;
+	}
+
+	try
+	{
+		const int mapCols = std::stoi(tokens[3]);
+		const int mapRows = std::stoi(tokens[4]);
+		const double scale = std::stod(tokens[5]);
+
+		const std::string& mapFileName = tokens[6];
+
+		const int tileWidth = std::stoi(tokens[7]);
+		const int tileHeight = std::stoi(tokens[8]);
+
+		const std::string& tileSetFileName = tokens[9];
+		const int tileSetCols = std::stoi(tokens[10]);
+		const int tileSetRows = std::stoi(tokens[11]);
+
+		const bool isCollisionLayer = StringToBool(tokens[12]);
+
+		Dimension2D tileDims;
+		tileDims.width = tileWidth;
+		tileDims.height = tileHeight;
+
+		Dimension2D mapDims;
+		mapDims.width = mapCols;
+		mapDims.height = mapRows;
+
+		Dimension2D tileSetDims;
+		tileSetDims.width = tileSetCols;
+		tileSetDims.height = tileSetRows;
+
+		TileLayer* tileLayer = new TileLayer(
+			tileDims,
+			mapDims,
+			scale,
+			mapFileName,
+			isCollisionLayer
+		);
+
+		tileLayer->LoadTileSet(tileSetFileName, tileSetDims);
+
+	
+		tileLayer->Load();
+
+		return tileLayer;
+	}
+	catch (const std::exception&)
+	{
+		
+		return nullptr;
+	}
 }
 
 //goes through each type for game objects
@@ -195,19 +288,28 @@ void Level::ParseBoundary(const std::vector<std::string>& tokens)
 
 void Level::ParseBackground(const std::vector<std::string>& tokens)
 {
-	
-	constexpr size_t kMinTokens = 7;
+	constexpr size_t kMinTokens = 10;
 	if (tokens.size() < kMinTokens)
 	{
 		return;
 	}
 
-	const std::string& imagePath = tokens[6];
-
-	PictureIndex picture = HtGraphics::instance.LoadPicture(imagePath);
-	if (picture != NO_PICTURE_INDEX)
+	try
 	{
-		HtGraphics::instance.SetBackgroundTexture(picture);
+		const double x = std::stod(tokens[1]);
+		const double y = std::stod(tokens[2]);
+		const double scale = std::stod(tokens[5]);
+		const std::string& image = tokens[6];
+		const double angle = std::stod(tokens[7]);
+
+		BackgroundObject* bg = new BackgroundObject(ObjectType::BACKGROUND);
+		bg->Initialise(image.c_str(), Vector2D(x, y), angle, scale);
+
+		ObjectManager::instance.AddItem(bg);
+	}
+	catch (const std::exception&)
+	{
+		return;
 	}
 }
 
